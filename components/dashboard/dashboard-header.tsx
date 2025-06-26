@@ -27,7 +27,7 @@ export function DashboardHeader() {
             <Link href="/history" className="text-sm font-medium text-gray-700 hover:text-gray-900">
               History
             </Link>
-            <Link href="/settings" className="text-sm font-medium text-gray-700 hover:text-gray-900">
+            <Link href="/settings/profile" className="text-sm font-medium text-gray-700 hover:text-gray-900">
               Settings
             </Link>
           </nav>
@@ -44,7 +44,14 @@ export function DashboardHeader() {
               <Bell className="h-4 w-4" />
             </Button>
 
-            <UserButton afterSignOutUrl="/" />
+            <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: "h-8 w-8",
+                },
+              }}
+            />
           </div>
         </div>
       </div>
