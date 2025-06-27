@@ -140,7 +140,58 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_team", ["teamId"])
     .index("by_platform", ["platform"])
-    .index("by_user_platform", ["userId", "platform"]),
+    .index("by_user_platform", ["userId", "platform"])
+    .index("by_token_expiry", ["tokenExpiresAt"]),
+
+  // Posts table - stores scheduled and published posts
+  posts: defineTable({
+    userId: v.id("users"),
+    teamId: v.optional(v.id("teams")),
+    title: v.optional(v.string()),
+    content: v.string(),
+    mediaUrls: v.array(v.string()),
+    platforms: v.array(v.union(v.literal("instagram"), v.literal("twitter"), v.literal("facebook"))),
+    scheduledFor: v.optional(v.number()),
+    status: v.union(
+      v.literal("draft"),
+      v.literal("scheduled"),
+      v.literal("publishing"),
+      v.literal("published"),
+      v.literal("failed"),
+      v.literal("cancelled"),
+    ),
+    publishedAt: v.optional(v.number()),
+    platformPosts: v.array(
+      v.object({
+        platform: v.union(v.literal("instagram"), v.literal("twitter"), v.literal("facebook")),
+        platformPostId: v.optional(v.string()),
+        status: v.union(v.literal("pending"), v.literal("published"), v.literal("failed")),
+        error: v.optional(v.string()),
+        publishedAt: v.optional(v.number()),
+        metadata: v.optional(v.any()),
+      }),
+    ),
+    engagement: v.object({
+      likes: v.number(),
+      comments: v.number(),
+      shares: v.number(),
+      views: v.number(),
+      lastUpdated: v.number(),
+    }),
+    settings: v.object({
+      mode: v.union(v.literal("standard"), v.literal("quick")),
+      autoPost: v.boolean(),
+      trackEngagement: v.boolean(),
+    }),
+    metadata: v.optional(v.any()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_team", ["teamId"])
+    .index("by_status", ["status"])
+    .index("by_scheduled_for", ["scheduledFor"])
+    .index("by_platform_post_id", ["platformPosts"]),
 
   // Activity log table - stores team and user activity
   activityLog: defineTable({
@@ -158,6 +209,7 @@ export default defineSchema({
       v.literal("post_created"),
       v.literal("post_scheduled"),
       v.literal("post_published"),
+      v.literal("post_failed"),
       v.literal("account_connected"),
       v.literal("account_disconnected"),
     ),
@@ -184,6 +236,7 @@ export default defineSchema({
       v.literal("usage_limit"),
       v.literal("subscription_expiring"),
       v.literal("system_announcement"),
+      v.literal("token_refresh_failed"),
     ),
     title: v.string(),
     message: v.string(),
